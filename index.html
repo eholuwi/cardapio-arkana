@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cardápio</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Cinzel:wght@500;700&family=Poppins:wght@400;600;700&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0716; --card:#1a0f2b; --pink:#ff3d9a; --pink2:#ff8cc6;
+  --portal:#97ce4c; --sw:#ffe81f; --bk:#ff8732; --ink:#f7eefc; --mute:#b9a6cf;
+  --gold:#d9b25f; --night:#0a0610; --dm:#2e6bb0;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:Poppins,system-ui,sans-serif;line-height:1.55;overflow-x:hidden}
+h1,h2,h3,.bungee{font-family:Bungee,Poppins,sans-serif;font-weight:400;letter-spacing:.02em}
+section{padding:68px 20px;max-width:760px;margin:0 auto}
+.hide{display:none!important}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}*{animation:none!important}}
+.eyebrow{color:var(--pink2);font-size:.78rem;letter-spacing:.25em;text-transform:uppercase;margin-bottom:8px}
+h2{font-size:clamp(1.6rem,6vw,2.5rem);line-height:1.1;margin-bottom:16px}
+h2 em{font-style:normal;color:var(--pink)}
+.lead{color:var(--mute);margin-bottom:26px}
+button{font-family:inherit}
+
+/* ===== portal Rick and Morty (shader WebGL + faíscas; CSS só se não houver WebGL) ===== */
+.portal{width:var(--ps,170px);height:var(--ps,170px);margin:0 auto;position:relative}
+.portal canvas{position:absolute;display:block;pointer-events:none}
+.portal canvas.gl{inset:0;width:100%;height:100%}
+.portal canvas.sp{inset:-40%;width:180%;height:180%}
+.portal::before{content:"";position:absolute;inset:-25%;border-radius:50%;background:radial-gradient(circle,#97ce4c40,transparent 65%);opacity:0;transition:opacity 1s}
+.portal.open::before{opacity:1;animation:pglow 2.6s ease-in-out infinite}
+@keyframes pglow{50%{transform:scale(1.12);opacity:.7}}
+.portal.css{border-radius:50%;transform:scale(0);transition:transform 1s cubic-bezier(.34,1.56,.64,1);
+  background:radial-gradient(circle,#efffc0 0 14%,#b6ec5c 26%,#6fc23b 42%,#2f8f2a 58%,#0b4a12 68%,transparent 71%);box-shadow:0 0 40px #97ce4c}
+.portal.css.open{transform:scale(1);animation:pspin 5s linear infinite}
+@keyframes pspin{to{transform:rotate(360deg)}}
+#portalFx{position:fixed;inset:0;z-index:60;pointer-events:none;overflow:hidden}
+#portalFx .portal{position:absolute;margin:0;--ps:300px;will-change:transform,opacity}
+#portalFx .flash{position:absolute;inset:0;background:radial-gradient(circle,#f4ffd6,#97ce4c 70%);opacity:0}
+
+/* ===== 1. cardápio Arkana (místico) ===== */
+#menu{min-height:100svh;max-width:none;display:flex;justify-content:center;padding:34px 20px;
+  background:radial-gradient(circle at 50% -10%,#2a1445 0,#0a0610 60%);color:#f2e8d2}
+#menu .wrap{max-width:460px;width:100%;text-align:center}
+.moon{font-size:2rem;color:var(--gold)}
+#menu h1{font-family:Cinzel,serif;font-weight:700;letter-spacing:.35em;font-size:2.1rem;color:var(--gold);margin-top:4px}
+#menu .tag{font-family:Cinzel,serif;font-size:.78rem;letter-spacing:.25em;text-transform:uppercase;color:#b9a27a;margin:6px 0 4px}
+#menu .season{display:inline-block;margin:10px 0 22px;padding:4px 14px;border:1px solid var(--gold);color:var(--gold);font-family:Cinzel,serif;font-size:.75rem;letter-spacing:.2em}
+.item{display:flex;gap:8px;align-items:baseline;padding:11px 0;border-bottom:1px solid #d9b25f44;text-align:left}
+.item b{font-family:Cinzel,serif;font-size:1rem}.item i{flex:1}.item span{color:var(--gold);font-size:.85rem}
+.item small{display:block;color:#a8946f;font-size:.74rem;font-weight:400;font-family:Poppins}
+#menu button.special{margin-top:26px;width:100%;padding:16px;border:1px solid var(--gold);border-radius:6px;background:linear-gradient(180deg,#3a1a5c,#24103d);color:var(--gold);font:700 .95rem Cinzel,serif;letter-spacing:.08em;cursor:pointer;animation:pulse 1.8s infinite}
+@keyframes pulse{50%{box-shadow:0 0 22px #d9b25f66}}
+.fine{font-size:.7rem;margin-top:14px;color:#8a7a5c}
+
+/* ===== 2. cartas ciganas ===== */
+#cards{max-width:none;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 0,#2a1445 0,#0a0610 65%);text-align:center}
+#cards h2{font-family:Cinzel,serif;color:var(--gold);font-size:1.5rem;letter-spacing:.12em;font-weight:700}
+#cards p.s{color:#b9a27a;font-size:.9rem;margin:6px 0 24px}
+.spread{display:flex;gap:12px;justify-content:center;perspective:900px}
+.tc{width:29vw;max-width:130px;aspect-ratio:2/3.2;position:relative;transform-style:preserve-3d;transition:transform .9s;cursor:pointer;border:0;background:none}
+.tc.flip{transform:rotateY(180deg)}
+.tc>div{position:absolute;inset:0;border-radius:12px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid var(--gold)}
+.tc .back{background:repeating-conic-gradient(from 0deg at 50% 50%,#3b1c63 0 15deg,#1c0d33 15deg 30deg);color:var(--gold);font-size:2rem}
+.tc .front{transform:rotateY(180deg);background:linear-gradient(160deg,#f5ebd0,#d9c08a);color:#2a1445;padding:6px}
+.tc .front .ic{font-size:2.4rem}.tc .front .nm{font-family:Cinzel,serif;font-weight:700;font-size:.8rem;margin-top:6px;letter-spacing:.06em}
+.tc .front .no{font-size:.65rem;opacity:.7}
+.tc .front{overflow:hidden}.tc .front img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#reading{margin-top:26px;min-height:80px;color:#f2e8d2;font-family:Cinzel,serif;max-width:420px;padding:0 18px}
+#goStory{margin-top:14px;padding:14px 26px;border:1px solid var(--gold);border-radius:6px;background:#24103d;color:var(--gold);font:700 .95rem Cinzel,serif;cursor:pointer}
+
+/* ===== 3. abertura Star Wars ===== */
+#crawl{max-width:none;padding:0;min-height:100svh;background:#000;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.intro{position:absolute;color:#4bd5ee;font-size:1.1rem;text-align:center;padding:0 28px;opacity:0;animation:introfade 4s forwards}
+@keyframes introfade{0%{opacity:0}20%,75%{opacity:1}100%{opacity:0}}
+.logo{position:absolute;font-family:Bungee;color:var(--sw);font-size:clamp(2.4rem,14vw,5rem);text-align:center;line-height:1;opacity:0;animation:logo 4.5s 4s forwards}
+@keyframes logo{0%{opacity:1;transform:scale(2.2)}100%{opacity:0;transform:scale(.05)}}
+.crawlwrap{position:absolute;inset:0;perspective:300px;overflow:hidden}
+.crawltext{position:absolute;left:50%;width:min(86vw,520px);margin-left:calc(min(86vw,520px)/-2);bottom:-20%;color:var(--sw);font-weight:700;text-align:justify;font-size:1.2rem;transform-origin:50% 100%;transform:rotateX(24deg);opacity:0;animation:crawl 24s 6.5s linear forwards}
+.crawltext h3{text-align:center;font-size:1.5rem;margin-bottom:.4em}
+.crawltext p{margin-bottom:1em}
+@keyframes crawl{from{opacity:1;bottom:-20%}to{opacity:1;bottom:130%}}
+#crawl .stars{position:absolute;left:0;top:0;width:1px;height:1px;border-radius:50%;background:transparent}
+#crawl .stars.s2{width:2px;height:2px;animation:twinkle 3s ease-in-out infinite alternate}
+@keyframes twinkle{from{opacity:1}to{opacity:.35}}
+#crawl .skip{position:absolute;right:14px;top:14px;z-index:5;background:#ffffff1a;color:#fff;border:1px solid #ffffff55;border-radius:99px;padding:6px 14px;font:600 .8rem Poppins;cursor:pointer}
+
+/* ===== números ===== */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{background:var(--card);border:2px solid #ffffff12;border-radius:18px;padding:18px 14px}
+.stat strong{display:block;font-family:Bungee;font-size:clamp(1.4rem,7vw,2.1rem);color:var(--portal)}
+.stat span{font-size:.85rem;color:var(--mute)}
+.stat.wide{grid-column:1/-1;border-color:var(--pink)}
+.stat.wide strong{color:var(--pink)}
+
+/* ===== linha do tempo ===== */
+.timeline{position:relative;margin-left:14px;padding-left:26px;border-left:3px dashed var(--pink)}
+.ev{position:relative;margin-bottom:38px}
+.ev::before{content:"";position:absolute;left:-37px;top:6px;width:20px;height:20px;border-radius:50%;background:var(--pink);box-shadow:0 0 0 5px var(--bg),0 0 14px var(--pink)}
+.ev time{font-family:Bungee;color:var(--portal);font-size:.92rem}
+.ev h3{font-size:1.1rem;margin:4px 0 6px}
+.ev p{color:var(--mute);font-size:.95rem;margin-bottom:6px}
+.ev q{display:block;margin:10px 0;padding:12px 14px;background:var(--card);border-left:4px solid var(--pink);border-radius:0 12px 12px 0;font-style:italic;quotes:none}
+.ev.big::before{background:var(--sw);box-shadow:0 0 0 5px var(--bg),0 0 18px var(--sw)}
+.ev.tarot::before{background:var(--gold);box-shadow:0 0 0 5px var(--bg),0 0 18px var(--gold)}
+
+/* polaroid (foto entra sozinha quando o arquivo existir) */
+.polaroid{background:#fbf7ee;padding:10px 10px 34px;border-radius:4px;width:min(78%,260px);box-shadow:0 8px 22px #0008;transform:rotate(-2.5deg);margin:12px 0 4px;position:relative}
+.polaroid:nth-of-type(even){transform:rotate(2deg)}
+.polaroid .ph{aspect-ratio:1;background:repeating-linear-gradient(45deg,#e6dfd0 0 10px,#efe9dc 10px 20px);display:flex;align-items:center;justify-content:center;color:#9a8f7a;font-size:.8rem;text-align:center;padding:8px;overflow:hidden}
+.polaroid img{width:100%;height:100%;object-fit:cover;display:block}
+.polaroid figcaption{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-family:"Special Elite",monospace;font-size:.78rem;color:#444}
+
+/* ===== momento difícil ===== */
+#hard{text-align:center}
+#hard .box{background:linear-gradient(160deg,#241238,#120a1f);border:2px solid #ffffff18;border-radius:24px;padding:34px 22px}
+#hard p{font-size:1.05rem;margin:10px 0}
+#hard .big{font-family:Bungee;font-size:1.5rem;color:var(--pink);line-height:1.2;margin-top:18px}
+
+/* ===== memorando Dunder Mifflin ===== */
+.memo{background:#fdfcf7;color:#222;border-radius:4px;padding:22px 20px;font-family:"Special Elite",monospace;box-shadow:0 10px 30px #000a;position:relative}
+.memo .head{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--dm);padding-bottom:10px;margin-bottom:14px}
+.memo .co{font-family:Bungee;color:var(--dm);font-size:1.15rem;line-height:1}
+.memo .co small{display:block;font-family:"Special Elite";font-size:.62rem;color:#666;letter-spacing:.12em}
+.memo .meta{font-size:.82rem;line-height:1.7;margin-bottom:14px}
+.memo .meta b{display:inline-block;width:70px}
+.memo p{font-size:.9rem;margin-bottom:10px}
+.mug{width:96px;float:right;margin:0 0 6px 10px}
+.stamp{display:inline-block;margin-top:6px;border:3px solid #c0392b;color:#c0392b;padding:2px 10px;transform:rotate(-6deg);font-weight:700;letter-spacing:.1em}
+
+/* ===== contrato ===== */
+.contract{background:#f6f0e0;color:#2b2420;border-radius:4px;padding:24px 20px;margin-top:26px;box-shadow:0 10px 30px #000a;font-family:Georgia,serif}
+.contract h3{font-family:Cinzel,serif;text-align:center;font-size:1.05rem;letter-spacing:.1em;margin-bottom:4px}
+.contract .sub{text-align:center;font-size:.78rem;color:#6b5a48;margin-bottom:14px;font-style:italic}
+.contract ol{padding-left:20px;font-size:.88rem}
+.contract li{margin-bottom:9px}
+.contract li b{font-family:Cinzel,serif;font-size:.8rem;letter-spacing:.04em}
+.sign{margin-top:18px}
+.sign label{font-size:.75rem;color:#6b5a48;display:block;margin-bottom:4px}
+#pad{width:100%;height:110px;background:#fffdf5;border:2px dashed #b4a07a;border-radius:6px;touch-action:none;display:block}
+.signrow{display:flex;gap:8px;margin-top:8px}
+.signrow button{border:0;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer}
+#clearPad{background:#e6dcc4;color:#4a3b2b}
+.hint{font-size:.72rem;color:#8a7a5c;margin-top:6px}
+.contract .who{display:flex;justify-content:space-between;gap:10px;margin-top:14px;font-size:.78rem}
+.contract .who div{flex:1;border-top:1px solid #6b5a48;padding-top:4px;text-align:center}
+
+/* ===== pedido ===== */
+#ask{overflow:hidden;text-align:center;min-height:90svh;display:flex;flex-direction:column;justify-content:center;align-items:center}
+#ask h2{font-size:clamp(2rem,9vw,3.4rem)}
+.btns{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:28px;position:relative;min-height:70px}
+.btns button{font:700 1.1rem Poppins;border:0;border-radius:99px;padding:16px 32px;cursor:pointer}
+#yes{background:var(--pink);color:#fff;animation:glow 1.8s infinite;opacity:.45;pointer-events:none;transition:opacity .4s}
+#yes.ready{opacity:1;pointer-events:auto}
+@keyframes glow{70%{box-shadow:0 0 0 18px #ff3d9a00}}
+#yes.ready{box-shadow:0 0 0 0 var(--pink)}
+#no{background:#2a2040;color:var(--mute);transition:transform .15s}
+
+/* ===== depois do SIM ===== */
+#afterSim h2.big{color:var(--pink);text-align:center}
+.final{background:linear-gradient(160deg,#2a1445,#150a25);border:2px solid var(--pink);border-radius:24px;padding:28px 22px;font-size:1.1rem;white-space:pre-line}
+.song{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:16px;padding:14px 16px;margin-top:18px}
+.song .disc{width:46px;height:46px;border-radius:50%;background:conic-gradient(var(--pink),#6b2bd9,var(--pink));animation:pspin 3s linear infinite;flex:0 0 auto}
+.song a{color:var(--pink2)}
+.reasons{display:grid;gap:12px}
+.reason{background:var(--card);border-radius:16px;padding:16px 18px;border:2px solid #ffffff10;display:flex;gap:12px;align-items:center}
+.reason::before{content:"♥";color:var(--pink);font-size:1.4rem}
+/* ===== mural "tudo que a gente é": quadro de cortiça com figurinhas temáticas ===== */
+#likes{background:radial-gradient(#00000022 1px,transparent 1.6px) 0 0/7px 7px,radial-gradient(#ffffff1c 1px,transparent 1.6px) 3px 4px/11px 11px,#c4925e;color:#2b1608;max-width:none}
+#likes>*{max-width:720px;margin-left:auto;margin-right:auto}
+#likes .eyebrow{color:#5a2e10}
+#likes h2{display:table;background:#fffdf5;color:#1b0a14;padding:6px 14px;transform:rotate(-1.5deg);box-shadow:0 6px 14px #0005}
+#likes h2 em{color:#e0457b}
+.lg{display:table;margin:34px 0 22px;padding:5px 14px;font:700 .95rem "Special Elite",monospace;letter-spacing:.04em;color:#2b1608;background:var(--tape,#fff3a3cc);transform:rotate(-2deg);box-shadow:0 3px 6px #0003}
+.lg:nth-of-type(2n){transform:rotate(1.5deg)}
+.likes{display:grid;grid-template-columns:1fr 1fr;gap:22px 14px;grid-auto-flow:dense}
+.like{--r:-1.6deg;position:relative;border-radius:10px;padding:20px 14px 14px;min-height:150px;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;box-shadow:0 10px 18px #0006;transform:rotate(var(--r));border:3px solid transparent}
+.like:nth-child(even){--r:1.8deg}.like:nth-child(3n){--r:-.7deg}
+.like.wide{grid-column:1/-1;min-height:auto}
+.like.reveal{transform:rotate(var(--r)) translateY(30px) scale(.92)}
+.like.reveal.in{transform:rotate(var(--r))}
+.like::before{content:"";position:absolute;top:-11px;left:16px;width:60px;height:20px;background:var(--tape,#ffffffb0);transform:rotate(-5deg);box-shadow:0 1px 2px #0002}
+.like .ic{position:absolute;top:-18px;right:-10px;width:54px;height:54px;transform:rotate(10deg)}
+.diecut{filter:drop-shadow(1.6px 0 0 #fff) drop-shadow(-1.6px 0 0 #fff) drop-shadow(0 1.6px 0 #fff) drop-shadow(0 -1.6px 0 #fff) drop-shadow(0 4px 4px #0006)}
+.like h3{font-size:1rem;line-height:1.1;padding-right:34px}
+.like p{font-size:.82rem;line-height:1.38}
+.like small{font-size:.72rem;opacity:.85}
+/* temas */
+.t-tarot{background:radial-gradient(circle,#d9b25f88 1px,transparent 1.8px) 0 0/14px 14px,linear-gradient(160deg,#1e1450,#0d0a26);color:#f2d78a;border:4px double #d9b25f!important;text-align:center;--tape:#d9b25f99}
+.t-bts{background:repeating-linear-gradient(90deg,#0000 0 46px,#5a3a2214 46px 48px),linear-gradient(180deg,#fbf6ea,#efe4cc 70%,#d8c3a0);color:#1d1a17;border:1px solid #8a6a48;box-shadow:inset 0 0 0 5px #fbf6ea,inset 0 0 0 6px #1d1a17,0 6px 14px #0004;--tape:#c9b38fcc}
+.t-bts h3{font-family:Cinzel,serif;letter-spacing:.22em;color:#1d1a17}
+.t-bts h3::after{content:" ⚓ SWIM";font-size:.62rem;letter-spacing:.3em;color:#8a6a48}
+.t-bts small{color:#8a6a48}
+.t-mh{background:repeating-linear-gradient(45deg,#111 0 8px,#ff3d9a 8px 16px) top/100% 16px no-repeat,#ffd1e8;color:#2a0016;border-color:#111!important;--tape:#111c}
+.t-coq{background:radial-gradient(circle,#ff9ec7 2px,transparent 2.6px) 0 0/14px 14px,#fff0f6;color:#8e244d;border:3px dashed #ff9ec7!important;--tape:#ffc2dccc}
+.t-got{background:linear-gradient(90deg,#1b2a3a 50%,#3a1414 50%);color:#eef3f6;border-color:#8a95a0!important;--tape:#cfd8dccc}
+.t-aot{background:repeating-linear-gradient(0deg,#0000002a 0 2px,transparent 2px 14px),repeating-linear-gradient(90deg,#0000001f 0 2px,transparent 2px 28px),#6b5843;color:#f3e9d8;border-color:#2f4a2a!important;--tape:#a5d6a7aa}
+.t-office{background:linear-gradient(#2e6bb0,#2e6bb0) top/100% 16px no-repeat,#fdfcf7;color:#1d2b3a;--tape:#fff3a3cc}
+.t-office p{font-family:"Special Elite",monospace}
+.t-rm{background:radial-gradient(circle at 85% 15%,#97ce4c66,transparent 45%),#0b1a12;color:#b6ec5c;border-color:#97ce4c!important;--tape:#97ce4c88}
+.t-sw{background:radial-gradient(#fff 1px,transparent 1.5px) 0 0/17px 17px,radial-gradient(#fff8 1px,transparent 1.5px) 8px 9px/23px 23px,#000;color:#ffe81f;border:2px solid #ffe81f!important;--tape:#ffe81f88}
+.t-bk{background:linear-gradient(#d62300,#d62300) bottom/100% 10px no-repeat,linear-gradient(#ff8732,#ff8732) bottom 10px left 0/100% 5px no-repeat,#f5ebdc;padding-bottom:24px;color:#502314;border-color:#ff8732!important;--tape:#ff873299}
+.t-ptm{background:repeating-linear-gradient(-45deg,#c0392b 0 6px,#ffd23f 6px 12px) top/100% 14px no-repeat,#ffd23f;color:#5a1d00;--tape:#ffffffb0}
+.t-jsk{background:conic-gradient(#e53935 25%,#fff 0 50%,#e53935 0 75%,#fff 0) 0 0/14px 14px repeat-x,#fff6ee;color:#7f0000;border-color:#e53935!important}
+.t-china{background:repeating-linear-gradient(90deg,#ffca2826 0 2px,transparent 2px 10px),#c62828;color:#fff8e1;border-color:#ffca28!important;--tape:#ffca28aa}
+.t-cup{background:radial-gradient(circle,transparent 55%,#3e2a1a44),repeating-radial-gradient(circle at 30% 40%,#0000 0 2px,#3e2a1a12 2px 3px),#ead9b5;color:#3b2614;border-color:#3b2614!important;--tape:#fffdf0bb}
+.t-cup p{font-family:"Special Elite",monospace}
+.t-lego{background:radial-gradient(circle at 12px 12px,#ffe866 0 5.5px,#d8b000 6px 7.5px,transparent 8px) 0 0/24px 24px,#ffd500;color:#1b1b1b;border-color:#1b1b1b!important}
+.t-lego h3{align-self:flex-start;background:#1b1b1b;color:#ffd500;padding:3px 8px;border-radius:4px}
+.t-lego p{background:#ffd500e6;border-radius:4px;padding:2px 4px}
+.t-itt{background:linear-gradient(135deg,#3f7de0 0 50%,#e8566b 50%);color:#fff;text-shadow:0 1px 2px #0006}
+.t-tt{background:#000;color:#fff;border:2px solid #25f4ee!important;box-shadow:5px 5px 0 #fe2c55,0 10px 18px #0006;--tape:#25f4ee88}
+.t-tt h3{text-shadow:-2px -1px 0 #25f4ee,2px 1px 0 #fe2c55}
+.t-shop{background:repeating-linear-gradient(90deg,#ff8cc6 0 12px,#fff 12px 24px) top/100% 14px no-repeat,#fff;color:#8e244d;border-color:#ff8cc6!important}
+
+/* ===== cores por seção (sai do roxo e rosa padrão) ===== */
+#memo{max-width:none;background:repeating-linear-gradient(45deg,#2a323e 0 3px,#2f3846 3px 6px)}
+#memo>*{max-width:720px;margin-left:auto;margin-right:auto}
+#memo .eyebrow{color:#9fc3ee}
+#numbers{max-width:none;background:#050505}
+#numbers>*{max-width:720px;margin-left:auto;margin-right:auto}
+#numbers .eyebrow{color:#25f4ee}#numbers h2 em{color:#fe2c55}
+#numbers .stat{background:#101010;border-color:#25f4ee}
+#numbers .stat:nth-child(3n+2){border-color:#fe2c55}
+#numbers .stat strong{color:#fff;text-shadow:-2px -1px 0 #25f4ee,2px 1px 0 #fe2c55}
+#numbers .stat.wide{border-color:#fe2c55}
+#reasons{max-width:none;background:radial-gradient(circle,#ffb3d1 1.5px,transparent 2px) 0 0/18px 18px,#ffe6f0;color:#4a1730}
+#reasons>*{max-width:720px;margin-left:auto;margin-right:auto}
+#reasons .eyebrow{color:#c2185b}#reasons h2 em{color:#e0457b}
+#reasons .reason{background:#fff;border:2px solid #ffb3d1;box-shadow:0 4px 0 #ffb3d1;color:#4a1730}
+#reasons .reason:nth-child(odd){transform:rotate(-.6deg)}#reasons .reason:nth-child(even){transform:rotate(.6deg)}
+#reasons .reason.reveal:not(.in){transform:translateY(26px)}
+#reasons .reason::before{content:"🎀";font-size:1.2rem}
+
+/* ===== linha do tempo colorida: trilho com as cores dos temas, balões de WhatsApp ===== */
+.timeline{border-left:0}
+.timeline::before{content:"";position:absolute;left:-3px;top:0;bottom:0;width:4px;border-radius:4px;background:linear-gradient(#ff3d9a,#9b59d0 20%,#97ce4c 40%,#ffe81f 60%,#25f4ee 80%,#ff3d9a)}
+.ev:nth-child(5n+2)::before{background:#9b59d0;box-shadow:0 0 0 5px var(--bg),0 0 14px #9b59d0}
+.ev:nth-child(5n+3)::before{background:#97ce4c;box-shadow:0 0 0 5px var(--bg),0 0 14px #97ce4c}
+.ev:nth-child(5n+4)::before{background:#25f4ee;box-shadow:0 0 0 5px var(--bg),0 0 14px #25f4ee}
+.ev h3{padding-right:46px}
+.ev .evic{position:absolute;right:0;top:-4px;width:42px;height:42px;transform:rotate(8deg)}
+.ev:nth-child(even) .evic{transform:rotate(-10deg)}
+.ev .evic svg{width:100%;height:100%;display:block}
+.ev q{background:#1f2c34;color:#e9edef;border-left:0;border-radius:4px 14px 14px 14px;font-style:normal;position:relative;max-width:92%;box-shadow:0 2px 0 #0006}
+.ev q::after{content:"✓✓";margin-left:8px;color:#53bdeb;font-size:.7rem;letter-spacing:-.15em}
+/* ===== figurinhas que aparecem nas bordas durante a rolagem ===== */
+.decor{position:relative;overflow:hidden}
+.decor>:not(.stk){position:relative;z-index:1}
+.stk{position:absolute;width:48px;height:48px;z-index:0;pointer-events:none;opacity:0;scale:0;transition:scale .55s cubic-bezier(.34,1.8,.64,1),opacity .3s;will-change:transform}
+.stk.in{opacity:.95;scale:1}
+.stk svg,.like .ic svg{width:100%;height:100%;display:block}
+/* ===== vida nas animações ===== */
+/* cartas: névoa ao fundo e brilho ao virar */
+.spread{position:relative}
+.spread::before{content:"";position:absolute;inset:-30% -20%;z-index:-1;background:radial-gradient(ellipse at 30% 50%,#6b3fa033,transparent 60%),radial-gradient(ellipse at 70% 50%,#d9b25f22,transparent 60%);filter:blur(10px);animation:mist 9s ease-in-out infinite alternate}
+@keyframes mist{to{transform:translateX(6%) scale(1.08)}}
+.tc .back{animation:cardbob 3.2s ease-in-out infinite}
+.tc[data-k="1"] .back{animation-delay:-1s}.tc[data-k="2"] .back{animation-delay:-2s}
+@keyframes cardbob{50%{box-shadow:0 0 18px #d9b25f55}}
+.tc.flip .front{animation:cardglow 1.4s .5s ease-out both}
+@keyframes cardglow{0%{box-shadow:0 0 0 #ffe9a8}40%{box-shadow:0 0 34px 6px #ffe9a8}100%{box-shadow:0 0 14px #d9b25f88}}
+#reading .ln{display:block;animation:readin .8s ease-out both}
+@keyframes readin{from{opacity:0;letter-spacing:.3em;filter:blur(4px)}to{opacity:1}}
+/* linha do tempo: o evento desliza e a bolinha "acende" */
+.ev.reveal{transform:translateX(-22px)}
+.ev.reveal.in{transform:none}
+.ev::before{transform:scale(0);transition:transform .5s .25s cubic-bezier(.34,1.8,.64,1)}
+.ev.in::before{transform:scale(1)}
+.ev q{opacity:0;transform:translateY(8px);transition:opacity .5s,transform .5s}
+.ev.in q{opacity:1;transform:none}
+.ev.in q:nth-of-type(1){transition-delay:.35s}.ev.in q:nth-of-type(2){transition-delay:.6s}.ev.in q:nth-of-type(3){transition-delay:.85s}
+/* memorando: papel timbrado, carimbo caindo, post-its, crachá */
+.memo .head .logo-dm{display:flex;align-items:center;gap:8px}
+.memo .head svg{width:34px;height:34px;flex:0 0 auto}
+.stamp{opacity:0}
+.memo.in .stamp{animation:stampdown .45s 1s cubic-bezier(.5,0,.75,0) forwards}
+@keyframes stampdown{0%{opacity:0;transform:scale(3.2) rotate(-24deg)}80%{opacity:1;transform:scale(.92) rotate(-6deg)}100%{opacity:1;transform:scale(1) rotate(-6deg)}}
+.memo.in{animation:thump .3s 1.42s}
+@keyframes thump{40%{transform:translate(2px,3px)}70%{transform:translate(-1px,-1px)}}
+.postits{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:22px 0 0}
+.postit{width:min(44%,170px);background:#fff17a;color:#3a3200;font:1rem/1.3 "Special Elite",monospace;padding:14px 12px 18px;box-shadow:0 6px 14px #0007;transform:rotate(-4deg);position:relative}
+.postit:nth-child(2){background:#ffb3d6;transform:rotate(3deg)}
+.postit::before{content:"";position:absolute;top:-9px;left:50%;width:56px;height:18px;margin-left:-28px;background:#ffffff88;transform:rotate(-3deg)}
+.postit.reveal{transform:rotate(-4deg) translateY(30px)}
+.postit.reveal.in{transform:rotate(-4deg)}
+.postit:nth-child(2).reveal{transform:rotate(3deg) translateY(30px);transition-delay:.15s}
+.postit:nth-child(2).reveal.in{transform:rotate(3deg)}
+.badge{margin:26px auto 0;width:min(76%,250px);background:#fff;color:#222;border-radius:12px;overflow:hidden;box-shadow:0 10px 26px #000a;text-align:center;font-family:Poppins;position:relative;transform-origin:50% -40px}
+.badge::before{content:"";position:absolute;top:8px;left:50%;width:44px;height:8px;margin-left:-22px;border-radius:9px;background:#0d0716}
+.badge .top{background:var(--dm);color:#fff;font:400 .8rem Bungee;padding:24px 10px 8px;letter-spacing:.06em}
+.badge .av{width:64px;height:64px;border-radius:50%;margin:12px auto 6px;background:var(--pink);display:flex;align-items:center;justify-content:center;font:400 1.6rem Bungee;color:#fff}
+.badge b{display:block;font-size:1rem}
+.badge span{display:block;font-size:.75rem;color:#666;padding-bottom:4px}
+.badge .perk{background:#eaf6ec;color:#1f7a3a;font-weight:600;font-size:.72rem;line-height:1.5;padding:8px 10px}
+.badge .bar{height:26px;margin:8px 22px 10px;background:repeating-linear-gradient(90deg,#222 0 2px,transparent 2px 4px,#222 4px 5px,transparent 5px 8px)}
+.badge.in{animation:swing 2.4s ease-out}
+@keyframes swing{0%{transform:rotate(8deg)}25%{transform:rotate(-6deg)}50%{transform:rotate(3deg)}75%{transform:rotate(-1deg)}100%{transform:none}}
+/* contrato: selo de aprovação depois da assinatura (overflow corta o selo grande antes de cair) */
+.contract,.memo{position:relative;overflow:hidden}
+.seal{position:absolute;right:14px;bottom:66px;width:106px;height:106px;border-radius:50%;border:4px double #1f7a3a;color:#1f7a3a;display:flex;flex-direction:column;align-items:center;justify-content:center;font:700 .7rem Cinzel,serif;letter-spacing:.08em;text-align:center;opacity:0;transform:scale(2.4) rotate(-30deg);pointer-events:none;background:#f6f0e0cc}
+.seal big{font-size:.86rem;line-height:1.2;letter-spacing:.02em}
+.seal span{font-size:.58rem}
+.seal.on{animation:sealin .5s cubic-bezier(.5,0,.75,0) forwards}
+@keyframes sealin{80%{opacity:1;transform:scale(.9) rotate(-12deg)}100%{opacity:1;transform:scale(1) rotate(-12deg)}}
+#padHint.ok{color:#1f7a3a;font-weight:700;animation:pop .5s}
+@keyframes pop{50%{transform:scale(1.08)}}
+/* pedido: botão que foge com graça */
+#no{transition:transform .45s cubic-bezier(.34,1.56,.64,1),background .3s}
+@media (prefers-reduced-motion:reduce){
+  .stamp{opacity:1;transform:rotate(-6deg)}.seal.on{opacity:1;transform:rotate(-12deg)}
+  .ev::before{transform:none}.ev q{opacity:1;transform:none}.ev.reveal,.postit.reveal{transform:none}
+}
+footer{text-align:center;color:var(--mute);font-size:.75rem;padding:30px}
+canvas#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+</style>
+</head>
+<body>
+
+<!-- ============ 1. CARDÁPIO ARKANA ============ -->
+<section id="menu">
+  <div class="wrap">
+    <div class="moon">☾ ✦ ☽</div>
+    <h1>ARKANA</h1>
+    <p class="tag">bar místico · drinks · gastronomia</p>
+    <p class="season">CARDÁPIO DA TEMPORADA</p>
+    <div class="item"><div><b>Pirarucu Enfeitiçado</b><small>croqueta de banana pacovã com pirarucu desfiado</small></div><i></i><span>♥</span></div>
+    <div class="item"><div><b>Yakisoba Trevoso</b><small>para quem tem fome de verdade</small></div><i></i><span>♥</span></div>
+    <div class="item"><div><b>Parmegiana Sangrenta</b><small>não é o que parece</small></div><i></i><span>♥</span></div>
+    <div class="item"><div><b>Poção do Amor</b><small>drink autoral · sem gelo no coração</small></div><i></i><span>♥</span></div>
+    <div class="item"><div><b>Sobremesa do dia</b><small>especial da casa · tirada das cartas</small></div><i></i><span>✦</span></div>
+    <button class="special" id="startBtn">✦ VER A SOBREMESA DO DIA ✦</button>
+    <p class="fine">Imagens meramente ilustrativas. Couvert artístico não incluso.</p>
+  </div>
+</section>
+
+<!-- ============ 2. AS CARTAS ============ -->
+<section id="cards" class="hide">
+  <h2>A SOBREMESA DO DIA<br>É UMA LEITURA</h2>
+  <p class="s">toque nas três cartas</p>
+  <div class="spread">
+    <button class="tc" data-k="0"><div class="back">✦</div><div class="front"><span class="no">24</span><span class="ic">♥️</span><span class="nm">O CORAÇÃO</span><img src="fotos/carta-24.jpg" alt="carta 24, O Coração" onerror="this.remove()"></div></button>
+    <button class="tc" data-k="1"><div class="back">✦</div><div class="front"><span class="no">25</span><span class="ic">💍</span><span class="nm">O ANEL</span><img src="fotos/carta-25.webp" alt="carta 25, O Anel" onerror="this.remove()"></div></button>
+    <button class="tc" data-k="2"><div class="back">✦</div><div class="front"><span class="no">33</span><span class="ic">🗝️</span><span class="nm">A CHAVE</span><img src="fotos/carta-33.webp" alt="carta 33, A Chave" onerror="this.remove()"></div></button>
+  </div>
+  <div id="reading"></div>
+  <button id="goStory" class="hide">ver o que as cartas contam →</button>
+</section>
+
+<!-- ============ 3. ABERTURA STAR WARS ============ -->
+<section id="crawl" class="hide">
+  <div class="stars"></div><div class="stars s2"></div>
+  <button class="skip" id="skip">pular ⏭</button>
+  <p class="intro">Há muito tempo, numa cidade<br>muito, muito desgraçada...</p>
+  <div class="logo">NOSSA<br>HISTÓRIA</div>
+  <div class="crawlwrap"><div class="crawltext">
+    <h3>EPISÓDIO I<br>A AMEAÇA DO BEM</h3>
+    <p>Os mais mais (mal falados) tiveram seus caminhos laçados pela CUMETRO, num papo sem pé nem cabeça. Foi a primeira vez que Luwi ficou tanto tempo fora da aula conversando com alguém com total liberdade, mesmo conhecendo pouco.</p>
+    <p>O tarô avisou que havia muito potencial nessa relação, mas que tudo dependia dele. Ele decidiu fazer tudo certo.</p>
+    <p>Esta é a história da Draculaura de Manaus e do cara que quer ser o Jim dessa Pam.</p>
+  </div></div>
+</section>
+
+<main id="story" class="hide">
+
+<!-- ============ 4. LINHA DO TEMPO ============ -->
+<section id="time" class="decor" data-stk="bow tarot heart burger saber skull brick note crown bag star portal">
+  <p class="eyebrow reveal">episódio 1</p>
+  <h2 class="reveal">Tudo começou com um <em>“pegou quanto na prova”</em></h2>
+  <p class="lead reveal" id="daysLine">Faz <b id="days">…</b> dias desde o primeiro papo salvo no WhatsApp.</p>
+  <div class="timeline">
+
+    <div class="ev reveal"><time>15 DE ABRIL</time><h3>O primeiro papo</h3><p>Comecei perguntando quanto você tinha tirado na prova. Antes disso você já tinha me respondido nos stories: “só estavam no exército”.</p>
+      <q>eu quero bolo.</q><q>meu nome eh bolo</q><q>nao flerta cmg eu sou maluco</q>
+      <figure class="polaroid" data-src="fotos/01-primeiro-papo.jpg"><div class="ph">📷 foto do começo</div><figcaption>o começo</figcaption></figure></div>
+
+    <div class="ev tarot reveal"><time>O TARÔ</time><h3>As cartas que você tirou pra mim</h3><p>Lembra que você tirou o tarô sobre mim logo que a gente se conheceu? Saiu que tinha muito potencial, mas que dependia de mim. Eu escutei, e estou aqui.</p></div>
+
+    <div class="ev reveal"><time>16 DE ABRIL</time><h3>Meu maior flerte</h3>
+      <q>“vc eh bonita”</q><q>“vc eh bonito. tenho cabelo rosa”</q></div>
+
+    <div class="ev big reveal"><time>17 DE ABRIL · K2</time><h3>O beijo</h3><p>K2, o bar da faculdade onde a gente foi várias vezes no começo. Na hora de ir embora, na primeira vez, senti que se eu não beijasse naquela hora, nunca ia ser. E eu estava evitando flertar com você. Foi tenso do melhor jeito.</p>
+      <figure class="polaroid" data-src="fotos/02-k2.jpg"><div class="ph">📷 foto do K2</div><figcaption>K2</figcaption></figure></div>
+
+    <div class="ev reveal"><time>18 DE ABRIL</time><h3>Já dava pra saber</h3><p>A gente estava trocando leitura de tarô, e eu soltei:</p><q>“eu sei q eu namoraria vc”</q><q>“mas sei q n vou tb”</q><p>Spoiler: eu errei feio.</p></div>
+
+    <div class="ev big reveal"><time>19 DE ABRIL</time><h3>Dia da Sub</h3><p>Você dormiu na minha casa. Eu fui pra igreja com o papai e voltei trazendo um x-salada pra você. Foi aí que você disse que me amava. No dia seguinte, na aula, a gente já estava de carinho. Desde então, o dia 19 é o nosso dia.</p>
+      <figure class="polaroid" data-src="fotos/03-xsalada.jpg"><div class="ph">📷 foto desse dia</div><figcaption>nois</figcaption></figure></div>
+
+    <div class="ev reveal"><time>O QUE MAIS GOSTEI</time><h3>Você sabe o que quer</h3><p>Você deixou claro, logo de cara, que se eu ficasse com outra pessoa era pra eu te contar, porque aí você não ia querer mais ficar comigo.</p></div>
+
+    <div class="ev reveal"><time>10 DE MAIO</time><h3>O que você me disse</h3><q>“sinto vontade de dizer que te amo toda vez que te vejo”</q></div>
+
+    <div class="ev reveal"><time>30 DE JULHO</time><h3>Eu já queria</h3><q>“mas quero namorar cntg pra ontem”</q></div>
+
+    <div class="ev reveal"><time>2 DE SETEMBRO</time><h3>O cabelo rosa</h3><q>“eu amo seu cabelo rosa”</q>
+      <figure class="polaroid" data-src="fotos/04-cabelo-rosa.jpg"><div class="ph">📷 foto do cabelo rosa</div><figcaption>Draculaura</figcaption></figure></div>
+
+    <div class="ev reveal"><time>14 DE SETEMBRO</time><h3>A promessa</h3><p>Você perguntou quando eu ia pedir. Eu respondi:</p><q>“a gnt vai namorar em dezembro”</q><p>Spoiler: me adiantei um pouquinho.</p></div>
+
+    <div class="ev big reveal"><time>19 DE OUTUBRO</time><h3>6 meses</h3><p>Meio ano de a gente. Parece pouco e parece a vida inteira.</p>
+      <figure class="polaroid" data-src="fotos/05-seis-meses.jpg"><div class="ph">📷 foto dos 6 meses</div><figcaption>6 meses</figcaption></figure></div>
+
+    <div class="ev reveal"><time>21 DE OUTUBRO</time><h3>O dia que eu percebi</h3><q>“eu sei que te amo quando seu silêncio não me deixa em estado de alerta”</q></div>
+
+    <div class="ev reveal"><time>27 DE OUTUBRO</time><h3>A viagem do BTS</h3><p>Você foi ver o BTS em São Paulo, um sonho de fã. Eu dei a ideia de você gravar um vlog da viagem, porque eu queria ver tudo pelos seus olhos.</p>
+      <figure class="polaroid" data-src="fotos/06-bts.jpg"><div class="ph">📷 foto do BTS</div><figcaption>BTS</figcaption></figure></div>
+  </div>
+</section>
+
+<!-- ============ 5. FASE DIFÍCIL ============ -->
+<section id="hard">
+  <div class="box reveal">
+    <p>A gente chegou perto de se perder. Quase virou trauma pra nós dois.</p>
+    <p>Mas você me disse <b>“eu amo vc e nao quero terminar com vc”</b> e eu disse que não ia terminar com você mesmo que você terminasse comigo.</p>
+    <p class="big">Esse vale da sombra da morte serviu pra ter certeza: eu quero você na minha vida toda.</p>
+  </div>
+</section>
+
+<!-- ============ 6. MEMORANDO + CONTRATO ============ -->
+<section id="memo" class="decor" data-stk="paper star paper heart paper">
+  <p class="eyebrow reveal">comunicado interno</p>
+  <div class="memo reveal">
+    <div class="head"><div class="logo-dm"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="3" y="7" width="26" height="30" fill="#fff" stroke="#2e6bb0" stroke-width="2.5"/><rect x="10" y="3" width="26" height="30" fill="#2e6bb0"/><text x="23" y="23" text-anchor="middle" font-family="Arial" font-weight="700" font-size="11" fill="#fff">DM</text></svg><div class="co">DUNDER MIFFLIN<small>PAPER COMPANY, INC. · MANAUS</small></div></div><div>MEMO</div></div>
+    <div class="meta"><b>PARA:</b> Bruna Maria Almeida De Oliveira<br><b>DE:</b> Luis Gabriel Arruda De Oliveira<br><b>ASSUNTO:</b> Pedido formal de namoro<br><b>URGÊNCIA:</b> máxima</div>
+    <svg class="mug" viewBox="0 0 120 130" aria-label="caneca Melhor Namorado do Mundo">
+      <path d="M20 22h70v70a22 22 0 0 1-22 22H42a22 22 0 0 1-22-22z" fill="#fff" stroke="#222" stroke-width="3"/>
+      <path d="M90 36h12a14 14 0 0 1 0 38H90" fill="none" stroke="#222" stroke-width="6"/>
+      <text x="55" y="52" text-anchor="middle" font-size="10" font-weight="700" font-family="Arial" fill="#c0392b">MELHOR</text>
+      <text x="55" y="66" text-anchor="middle" font-size="10" font-weight="700" font-family="Arial" fill="#c0392b">NAMORADO</text>
+      <text x="55" y="80" text-anchor="middle" font-size="10" font-weight="700" font-family="Arial" fill="#c0392b">DO MUNDO</text>
+      <text x="55" y="96" text-anchor="middle" font-size="7" font-family="Arial" fill="#555">(pós-assinatura)</text>
+    </svg>
+    <p>Prezada Bruna,</p>
+    <p>Após cerca de 7 meses de análise criteriosa, 95 mil mensagens de pesquisa de campo e uma quantidade inaceitável de figurinhas, o Departamento de Sentimentos conclui que a senhorita é a pessoa certa para o cargo de namorada.</p>
+    <p>Como Michael Scott diria: “eu sou o melhor chefe do mundo”. Eu pretendo ser o melhor namorado. Prometo me esforçar mais do que o Michael para ser querido.</p>
+    <p>Pede-se a leitura do contrato abaixo e a devolução assinada.</p>
+    <span class="stamp">URGENTE</span>
+  </div>
+
+  <div class="postits">
+    <div class="postit reveal">Lembrete: dizer SIM.<br><br>(that's what she said 😏)</div>
+    <div class="postit reveal">Toby, do RH, não foi consultado. ✓</div>
+  </div>
+
+  <div class="badge reveal" aria-label="crachá">
+    <div class="top">DUNDER MIFFLIN</div>
+    <div class="av">B</div>
+    <b>Bruna</b>
+    <span>Novo emprego: <b style="display:inline;font-size:.8rem">Namorada</b> · vaga única</span>
+    <div class="bar"></div>
+    <span class="perk">✓ efetivada no 1º dia<br>✓ aqui não tem jacaré 🐊</span>
+  </div>
+
+  <div class="contract reveal">
+    <h3>CONTRATO DE NAMORO</h3>
+    <p class="sub">entre Luis Gabriel Arruda De Oliveira (Contratante) e Bruna Maria Almeida De Oliveira (Contratada)</p>
+    <ol>
+      <li><b>CLÁUSULA 1 · DO LANCHE.</b> Todo lanche fast food será compartilhado. Quem comer sozinho é obrigado a se redimir com um lanche ou um beijo.</li>
+      <li><b>CLÁUSULA 2 · DO “AMOR”.</b> O uso da palavra “amor” é liberado e obrigatório, sem limite diário, inclusive às 4h da manhã.</li>
+      <li><b>CLÁUSULA 3 · DAS SÉRIES.</b> Toda série ou filme começado deve ser finalizado, a não ser que ambas as partes não queiram mais. Rick and Morty e Star Wars constam como pendências oficiais (A Ameaça Fantasma já foi cumprida e aprovada pela Contratada).</li>
+      <li><b>CLÁUSULA 4 · DO SONO.</b> Depois do “boa noite”, as duas partes devem dormir de verdade. Fica proibido continuar jogando ou rolando o TikTok escondido.</li>
+      <li><b>CLÁUSULA 5 · DOS ROLÊS.</b> Para onde a Contratada quiser sair, o Contratante vai junto.</li>
+      <li><b>CLÁUSULA 6 · DO ABRAÇO.</b> Em caso de cansaço, tristeza ou simples vontade, a parte deve procurar a outra, que se compromete a estar sempre de braços abertos para acolher da melhor forma possível.</li>
+      <li><b>CLÁUSULA 7 · DO SILÊNCIO.</b> Silêncio não é desconforto, mas exige confirmação das duas partes: “Está bem?”.</li>
+      <li><b>CLÁUSULA 8 · DA HONESTIDADE.</b> Se uma das partes sentir algo, avisa. Esse é o jeito que a Contratada ensinou: falar na hora.</li>
+      <li><b>CLÁUSULA 9 · DO DESPERTAR.</b> Se a Contratada pedir para ser acordada, seja para trabalhar ou para tomar banho, o Contratante fica autorizado a usar qualquer meio necessário, inclusive um paredão. Reclamar depois de acordada não vale.</li>
+      <li><b>CLÁUSULA 10 · DA CAMA.</b> A cama será arrumada antes de dormir, sempre. Essa é a mania oficial do Contratante, e a Contratada declara estar ciente.</li>
+      <li><b>CLÁUSULA 11 · DO DIA 19.</b> Todo dia 19 é comemorado. O mínimo aceitável é um x-salada.</li>
+      <li><b>CLÁUSULA 12 · DO APERTO E DO CHEIRO.</b> Beliscar o Contratante é proibido. Apertar a pele dele está liberado, assim como cheirá-lo, sem limite diário.</li>
+      <li><b>CLÁUSULA 13 · DO CUIDADO.</b> O Contratante promete cuidar da Contratada sempre. Esta é a única cláusula sem exceção.</li>
+      <li><b>CLÁUSULA 14 · DA RESCISÃO.</b> Este contrato não tem prazo de validade e não prevê rescisão. Se um dia a Contratada quiser sair, o Contratante pedirá, de joelhos, mais uma chance.</li>
+    </ol>
+    <div class="sign">
+      <label>assinatura da Contratada (desenhe com o dedo)</label>
+      <canvas id="pad"></canvas>
+      <div class="signrow"><button id="clearPad">limpar</button></div>
+      <p class="hint" id="padHint">Assine acima para liberar o botão.</p>
+    </div>
+    <div class="who"><div>Luis Gabriel<br>(Contratante)</div><div>Bruna<br>(Contratada)</div></div>
+    <div class="seal" id="seal"><span>DUNDER MIFFLIN</span><big>APROVADO</big><span>✦ 19/11 ✦</span></div>
+  </div>
+</section>
+
+<!-- ============ 7. PEDIDO ============ -->
+<section id="ask">
+  <div class="portal" style="--ps:210px;margin-bottom:26px"></div>
+  <p class="eyebrow reveal">então, Bruna...</p>
+  <h2 class="reveal">Quer namorar comigo?</h2>
+  <div class="btns" id="btns">
+    <button id="yes">SIM 💖</button>
+    <button id="no">pensar mais</button>
+  </div>
+</section>
+
+<!-- ============ 8. DEPOIS DO SIM ============ -->
+<div id="afterSim" class="hide">
+<section>
+  <h2 class="big reveal">ELA ASSINOU!<br>É OFICIAL 💖</h2>
+  <div class="final reveal" id="finalMsg"></div>
+  <figure class="polaroid reveal" data-src="fotos/07-nos-dois.jpg" style="margin:26px auto 0"><div class="ph">📷 foto de nós dois</div><figcaption>nós dois</figcaption></figure>
+  <div class="song reveal"><div class="disc"></div><div><b>Under Your Spell · Snow Strippers</b><br><span id="songMsg" style="color:var(--mute);font-size:.85rem">a música preferida dela</span><br><span style="color:var(--mute);font-size:.78rem">(e a Marina Sena mora na playlist também)</span><br><a id="songLink" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=Snow+Strippers+Under+Your+Spell">ouvir no YouTube</a></div></div>
+  <audio id="song" src="musica/under-spell.mp3" preload="none"></audio>
+</section>
+
+<section id="numbers" class="decor" data-stk="note heart note">
+  <p class="eyebrow reveal">os números não mentem</p>
+  <h2 class="reveal">Só o que o WhatsApp <em>conseguiu contar</em></h2>
+  <div class="grid">
+    <div class="stat wide reveal"><strong>95.465</strong><span>mensagens trocadas em 211 dias de conversa (15/04 a 17/11)</span></div>
+    <div class="stat reveal"><strong>836</strong><span>vezes que a gente escreveu “te amo”</span></div>
+    <div class="stat reveal"><strong>4.260</strong><span>figurinhas</span></div>
+    <div class="stat reveal"><strong>1.516</strong><span>fotos</span></div>
+    <div class="stat reveal"><strong>273</strong><span>vídeos</span></div>
+    <div class="stat wide reveal"><strong>8.549</strong><span>mensagens entre meia-noite e 5h da manhã. Dormir é opcional.</span></div>
+  </div>
+</section>
+
+<section id="reasons" class="decor" data-stk="bow heart bow skull bow heart">
+  <p class="eyebrow reveal">já que você nunca perguntou</p>
+  <h2 class="reveal">E é por isso que <em>eu te amo</em></h2>
+  <div class="reasons" id="reasonList"></div>
+</section>
+
+<section id="likes">
+  <p class="eyebrow reveal">o nosso universo</p>
+  <h2 class="reveal">Tudo que a gente <em>é</em></h2>
+  <p class="lg" style="--tape:#ffc2dccc">o que é seu 🎀</p>
+  <div class="likes">
+    <div class="like wide t-tarot reveal" data-ic="tarot"><h3>TARÔ E BARALHO CIGANO</h3><p>Foi o tarô que avisou que a gente tinha potencial. Eu confiei nas cartas.</p></div>
+    <div class="like wide t-bts reveal" data-ic="heart"><h3>BTS</h3><p>Pra mim é música boa. Pra você foi um sonho realizado: ver eles ao vivo em São Paulo.</p><small>💜</small></div>
+    <div class="like t-mh reveal" data-ic="skull"><h3>MONSTER HIGH</h3><p>A Draculaura de Manaus oficial é você. Fato, não fofoca. Tanto que já falam: “não vale, vai se fantasiar de Bruna”.</p></div>
+    <div class="like t-coq reveal" data-ic="bow"><h3>MY MELODY, HELLO KITTY E COQUETTE</h3><p>Laço, rosinha e fofura: a sua estética oficial.</p></div>
+    <div class="like t-got reveal" data-ic="sword"><h3>GAME OF THRONES</h3><p>Gelo, fogo e dragão. (A Casa do Dragão também.)</p></div>
+    <div class="like t-aot reveal" data-ic="wings"><h3>ATTACK ON TITAN</h3><p>Shinzou wo sasageyo: o meu coração já é seu.</p></div>
+  </div>
+
+  <p class="lg" style="--tape:#b3d4ffcc">o que a gente assiste 📺</p>
+  <div class="likes">
+    <div class="like wide t-office reveal" data-ic="paper"><h3>THE OFFICE</h3><p>A primeira série que a gente viu inteira. Eu sou o Jim, você é a Pam.</p></div>
+    <div class="like t-rm reveal" data-ic="portal"><h3>RICK AND MORTY</h3><p>Quase terminando. Wubba lubba dub dub.</p></div>
+    <div class="like t-sw reveal" data-ic="saber"><h3>STAR WARS</h3><p>Paramos em A Ameaça Fantasma e você gostou. Falta o resto todo.</p></div>
+  </div>
+
+  <p class="lg" style="--tape:#ffd8a8cc">o que a gente come 🍔</p>
+  <div class="likes">
+    <div class="like t-bk reveal" data-ic="crown"><h3>BURGER KING</h3><p>Você é o combo Rodeio. Eu sou o combo Chicken Jr.</p></div>
+    <div class="like t-ptm reveal" data-ic="burger"><h3>PEGA TUA MERENDA</h3><p>12 Telezé e 1 kg de batata. Até agora.</p></div>
+    <div class="like t-jsk reveal" data-ic="fries"><h3>JSK BURGER</h3><p>A gente comia direto no começo, até enjoar.</p></div>
+    <div class="like t-china reveal" data-ic="box"><h3>CHINA IN BOX</h3><p>Fui eu que te fiz gostar do Macarrão Taiwan.</p></div>
+  </div>
+
+  <p class="lg" style="--tape:#c8f0a8cc">o que a gente joga 🎮</p>
+  <div class="likes">
+    <div class="like wide t-cup reveal" data-ic="plane"><h3>CUPHEAD</h3><p>Na fase do avião eu perdi. Você, que sempre morria, não só durou como ganhou sozinha. Eu fiquei muito feliz, namoral.</p></div>
+    <div class="like t-lego reveal" data-ic="brick"><h3>LEGO BATMAN</h3><p>Zeramos o 1 juntos. O 2 tá pendente.</p></div>
+    <div class="like t-itt reveal" data-ic="split"><h3>IT TAKES TWO</h3><p>Um jogo que só funciona em dupla. Igual a gente.</p></div>
+  </div>
+
+  <p class="lg" style="--tape:#b2f5f2cc">o que a gente faz 📱</p>
+  <div class="likes">
+    <div class="like t-tt reveal" data-ic="note"><h3>TIKTOK</h3><p>Somos os reis de falar todos os memes.</p></div>
+    <div class="like t-shop reveal" data-ic="bag"><h3>SHOPPING</h3><p>O nosso rolê de sempre.</p></div>
+  </div>
+  <div class="portal" style="margin:36px auto 0"></div>
+</section>
+<footer>feito com amor (e uma ajudinha do Claude) · para a Bruna</footer>
+</div>
+
+</main>
+
+<canvas id="fx"></canvas>
+
+<script>
+/* ===== ÁREA EDITÁVEL ===== */
+const REASONS = [
+  "Tudo que você faz: o jeito que você ri, que anda, que fala",
+  "Você me entende",
+  "Quando eu tô mal, você me acolhe nos braços, me abraça e me beija",
+  "Suas maquiagens são muito boas, e eu amo isso",
+  "Você não dá bola pra nenhum cara. Odeia os homens (menos eu)",
+  "Seu silêncio não me deixa em alerta",
+  "Você colocou “brunamaria67” na sua conta do Root (six seven 🤪) e eu te amo por isso",
+  "Você já vomitou no meu tapete e eu te amo por isso",
+  "Você me conta as coisas, e eu gosto de ouvir",
+  "Seu cabelo rosa",
+  "Você sabe o que quer",
+  "Porque você é linda, simples assim"
+];
+const READINGS = [
+  "O Coração: o que a gente sente é verdadeiro.",
+  "O Anel: existe um compromisso no ar.",
+  "A Chave: a resposta está nas suas mãos."
+];
+/* TODO(human): escreva aqui a mensagem final do Luis Gabriel (3 a 4 frases, nas suas palavras). */
+const FINAL_MESSAGE = "Obrigado por ser a pessoa que você é e por me escolher. Eu te amo, e é por isso que eu quero fazer tudo certo com você.";
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ===== portal: espiral líquida em faixas de verde (WebGL) + faíscas (canvas 2D) ===== */
+const FRAG = `#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+uniform vec2 res;uniform float t,open;
+float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+ return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+1.),f.x),f.y);}
+float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*n(p);p=p*2.03+7.1;a*=.5;}return v;}
+void main(){
+ vec2 p=(gl_FragCoord.xy-.5*res)/min(res.x,res.y)*2.;p.y*=1.06;
+ float r=length(p),a=atan(p.y,p.x);
+ vec2 ring=vec2(cos(a),sin(a));
+ float R=(.66+.2*fbm(ring*1.7+vec2(t*.45,-t*.3))+.06*fbm(ring*4.5-t*.9)+.01*sin(a*9.+t*2.6))*open;
+ float sw=a+2.4/(r+.28)-t*1.5;
+ vec2 q=vec2(cos(sw),sin(sw))*r;
+ float w=fbm(q*2.4+vec2(t*.25,-t*.2));
+ float v=.5+.5*sin(sw*3.+w*5.);
+ v=mix(v,fbm(q*4.+w*2.-t*.4),.45);
+ v+=(1.-smoothstep(0.,max(R,.001),r))*.75-.2;
+ vec3 c=vec3(.04,.27,.07);
+ c=mix(c,vec3(.18,.56,.16),smoothstep(.26,.3,v));
+ c=mix(c,vec3(.44,.76,.23),smoothstep(.46,.5,v));
+ c=mix(c,vec3(.71,.93,.36),smoothstep(.66,.7,v));
+ c=mix(c,vec3(.94,1.,.75),smoothstep(.86,.9,v));
+ float d=r-R;
+ c=mix(c,vec3(.71,.93,.36),smoothstep(-.075,-.045,d));
+ float inside=1.-smoothstep(-.012,.012,d);
+ float g=exp(-max(d,0.)*6.)*.6*open*(1.-inside)*(1.-smoothstep(.8,1.,r));
+ gl_FragColor=vec4(c*inside+vec3(.45,.85,.25)*g,inside+g);
+}`;
+function glProgram(gl){
+  const sh=(type,src)=>{ const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s); return gl.getShaderParameter(s,gl.COMPILE_STATUS)?s:null; };
+  const vs=sh(gl.VERTEX_SHADER,'attribute vec2 p;void main(){gl_Position=vec4(p,0,1);}'), fs=sh(gl.FRAGMENT_SHADER,FRAG);
+  if(!vs||!fs) return null;
+  const pr=gl.createProgram(); gl.attachShader(pr,vs); gl.attachShader(pr,fs); gl.linkProgram(pr);
+  if(!gl.getProgramParameter(pr,gl.LINK_STATUS)) return null;
+  gl.useProgram(pr);
+  gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  const loc=gl.getAttribLocation(pr,'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  return {res:gl.getUniformLocation(pr,'res'),t:gl.getUniformLocation(pr,'t'),open:gl.getUniformLocation(pr,'open')};
+}
+const portals=[];
+function makePortal(el,{dpr=Math.min(devicePixelRatio||1,1.5),sparks=36}={}){
+  const P={el,dpr,max:sparks,sparks:[],visible:false,openT:0,last:0};
+  const c=document.createElement('canvas'); c.className='gl';
+  const s=document.createElement('canvas'); s.className='sp';
+  el.append(c,s);
+  const gl=c.getContext('webgl',{alpha:true,premultipliedAlpha:true,antialias:false});
+  P.u = gl && glProgram(gl);
+  if(P.u) P.gl=gl; else el.classList.add('css');
+  P.sx=s.getContext('2d');
+  P.resize=()=>{ P.size=el.clientWidth; if(!P.size) return;
+    c.width=c.height=Math.round(P.size*dpr); s.width=s.height=Math.round(P.size*1.8*dpr);
+    if(P.gl) P.gl.viewport(0,0,c.width,c.height); };
+  P.resize();
+  portals.push(P); return P;
+}
+/* elástico: abre rápido, passa um pouco do tamanho e volta, como líquido */
+const elastic = x => x>=1 ? 1 : 1 - Math.pow(2,-9*x)*Math.cos(x*Math.PI*3.2);
+function drawPortal(P,t,now){
+  if(!P.size) P.resize();
+  const open = REDUCED ? 1 : elastic((now-P.openT)/1300);
+  if(P.gl){ const g=P.gl; g.uniform2f(P.u.res,g.drawingBufferWidth,g.drawingBufferHeight); g.uniform1f(P.u.t,REDUCED?3:t); g.uniform1f(P.u.open,Math.max(open,.001)); g.drawArrays(g.TRIANGLE_STRIP,0,4); }
+  if(REDUCED) return;
+  const x=P.sx, W=x.canvas.width, k=P.dpr, R=P.size*.37*open, dt=Math.min(3,(now-(P.last||now))/16.7);
+  P.last=now;
+  x.clearRect(0,0,W,W);
+  if(open>.3 && P.sparks.length<P.max && Math.random()<.6*dt){
+    const a=Math.random()*Math.PI*2, sp=.4+Math.random()*1.3;
+    P.sparks.push({x:Math.cos(a)*R,y:Math.sin(a)*R,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-.5,life:40+Math.random()*60,age:0,s:1.2+Math.random()*2.4});
+  }
+  x.globalCompositeOperation='lighter';
+  P.sparks.forEach(p=>{ p.age+=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy-=.012*dt;
+    const al=1-p.age/p.life; if(al<=0) return;
+    const X=W/2+p.x*k, Y=W/2+p.y*k;
+    x.fillStyle=`rgba(151,206,76,${al*.18})`; x.beginPath(); x.arc(X,Y,p.s*2.2*k,0,7); x.fill();
+    x.fillStyle=`rgba(230,255,170,${al})`; x.beginPath(); x.arc(X,Y,p.s*k,0,7); x.fill(); });
+  x.globalCompositeOperation='source-over';
+  P.sparks=P.sparks.filter(p=>p.age<p.life);
+}
+function portalLoop(now){
+  const t=(now/1000)%600; let any=false;
+  portals.forEach(P=>{ if(!P.visible) return; drawPortal(P,t,now); if(REDUCED) P.visible=false; else any=true; });
+  if(any) requestAnimationFrame(portalLoop); else portalLoop.on=false;
+}
+function wakePortals(){ if(!portalLoop.on){ portalLoop.on=true; requestAnimationFrame(portalLoop); } }
+const pio = new IntersectionObserver(es => es.forEach(e => {
+  const P = portals.find(p=>p.el===e.target); if(!P) return;
+  P.visible = e.isIntersecting;
+  if(e.isIntersecting){ if(!P.openT){ P.openT=performance.now(); P.el.classList.add('open'); } P.last=0; wakePortals(); }
+}), {threshold:.25});
+$$('.portal').forEach(el => pio.observe(makePortal(el).el));
+addEventListener('resize', () => portals.forEach(P=>P.resize()));
+
+/* o portal que engole a tela quando ela diz SIM */
+function portalJump(x, y, done){
+  if(REDUCED){ done(); return; }
+  const fx=document.createElement('div'); fx.id='portalFx';
+  fx.innerHTML='<div class="portal"></div><div class="flash"></div>';
+  document.body.appendChild(fx);
+  const el=fx.firstChild, S=300;
+  el.style.left=(x-S/2)+'px'; el.style.top=(y-S/2)+'px';
+  const P=makePortal(el,{dpr:.8,sparks:70}); P.visible=true; P.openT=performance.now(); el.classList.add('open'); wakePortals();
+  const cover=Math.hypot(innerWidth,innerHeight)/S*2.8;
+  el.animate([{transform:'scale(.4) rotate(0deg)'},{transform:'scale(1.1) rotate(-50deg)',offset:.4},{transform:`scale(${cover}) rotate(-220deg)`}],{duration:1600,easing:'cubic-bezier(.6,0,.4,1)',fill:'forwards'});
+  setTimeout(()=>fx.lastChild.animate([{opacity:0},{opacity:1},{opacity:0}],{duration:1000,fill:'forwards'}),1150);
+  setTimeout(()=>{
+    done();
+    const clean=()=>{ if(!fx.isConnected) return;
+      P.visible=false; portals.splice(portals.indexOf(P),1);
+      const lose=P.gl&&P.gl.getExtension('WEBGL_lose_context'); if(lose) lose.loseContext();
+      fx.remove(); };
+    fx.animate([{opacity:1},{opacity:0}],{duration:700,fill:'forwards'}).onfinish=clean;
+    setTimeout(clean,1200);
+  },1650);
+}
+function show(id){ $$('#menu,#cards,#crawl,#story').forEach(e=>e.classList.add('hide')); $(id).classList.remove('hide'); window.scrollTo(0,0); }
+
+$('#finalMsg').textContent = FINAL_MESSAGE;
+const list = $('#reasonList');
+REASONS.forEach(t => { const d=document.createElement('div'); d.className='reason reveal'; d.textContent=t; list.appendChild(d); });
+
+const io = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){e.target.classList.add('in'); io.unobserve(e.target);} }), {threshold:.12});
+const observeAll = () => $$('.reveal').forEach(el => io.observe(el));
+
+/* ===== ícones das figurinhas (SVG feito à mão, só "inspirado em") ===== */
+const S = 'stroke-width="2" stroke-linejoin="round"';
+const BOW = `<path d="M24 22C14 9 3 13 6 24s13 8 18 2z" fill="#ff8cc6" stroke="#c2185b" ${S}/><path d="M24 22c10-13 21-9 18 2s-13 8-18 2z" fill="#ff8cc6" stroke="#c2185b" ${S}/><path d="M22 26l-6 15 5-2 3-11zM26 26l6 15-5-2-3-11z" fill="#ff5fa2" stroke="#c2185b" ${S}/><circle cx="24" cy="24" r="4.5" fill="#ff5fa2" stroke="#c2185b" ${S}/>`;
+const HEART = c => `<path d="M24 41C10 31 4 23 8 15c4-7 13-6 16 1 3-7 12-8 16-1 4 8-2 16-16 26z" fill="${c}" stroke="#0005" ${S}/><path d="M13 16c2-3 5-3 7-1" stroke="#fff9" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
+const ICONS = {
+  bow: BOW,
+  heart: HEART('#9b59d0'),
+  pink: HEART('#ff5fa2'),
+  skull: `<path d="M24 9c-9 0-15 6-15 14 0 5 3 8 6 10v6h18v-6c3-2 6-5 6-10 0-8-6-14-15-14z" fill="#fff" stroke="#111" ${S}/><circle cx="18" cy="23" r="4" fill="#111"/><circle cx="30" cy="23" r="4" fill="#111"/><path d="M24 28l-2 4h4z" fill="#111"/><path d="M20 39v-4M24 39v-4M28 39v-4" stroke="#111" stroke-width="1.6"/><g transform="translate(23 -2) scale(.55)">${BOW}</g>`,
+  tarot: `<rect x="12" y="6" width="24" height="36" rx="3" fill="#24103d" stroke="#d9b25f" ${S}/><rect x="15" y="9" width="18" height="30" rx="2" fill="none" stroke="#d9b25f88"/><path d="M24 14l2.6 6.4 6.9.5-5.3 4.4 1.7 6.7L24 28.4 18.1 32l1.7-6.7-5.3-4.4 6.9-.5z" fill="#d9b25f"/><path d="M27 34a3 3 0 1 1-3-3 2.4 2.4 0 0 0 3 3z" fill="#f2d78a"/>`,
+  sword: `<circle cx="24" cy="24" r="19" fill="#c0392b" stroke="#0006" ${S}/><path d="M24 5a19 19 0 0 1 0 38z" fill="#5dade2"/><path d="M24 7l3 23-3 4-3-4z" fill="#eceff1" stroke="#263238" stroke-width="1.5"/><rect x="16" y="30" width="16" height="3.5" rx="1" fill="#8d6e63" stroke="#3e2723"/><rect x="22.5" y="33.5" width="3" height="8" fill="#5d4037"/>`,
+  wings: `<path d="M10 8h28v18c0 8-6 13-14 16-8-3-14-8-14-16z" fill="#6d4c2f" stroke="#3e2a17" ${S}/><path d="M24 33c-6-4-11-10-12-19 4 4 8 6 12 7z" fill="#fff" stroke="#3e2a17" stroke-width="1.2"/><path d="M24 33c6-4 11-10 12-19-4 4-8 6-12 7z" fill="#1e5aa8" stroke="#3e2a17" stroke-width="1.2"/><path d="M15 18l6 4M14 22l7 4M33 18l-6 4M34 22l-7 4" stroke="#3e2a1788" stroke-width="1.2"/>`,
+  paper: `<rect x="11" y="11" width="24" height="30" fill="#fff" stroke="#2e6bb0" ${S} transform="rotate(-8 23 26)"/><rect x="13" y="8" width="24" height="30" fill="#fff" stroke="#2e6bb0" ${S}/><path d="M17 15h16M17 20h16M17 25h11" stroke="#2e6bb0" stroke-width="2"/><text x="25" y="35" text-anchor="middle" font-size="6" font-weight="700" font-family="Arial" fill="#2e6bb0">DM</text>`,
+  portal: `<circle cx="24" cy="24" r="19" fill="#2f8f2a" stroke="#0b4a12" ${S}/><path d="M24 24m-13 0a13 13 0 1 1 13 13 9 9 0 1 1-9-9 5 5 0 1 1 5 5" fill="none" stroke="#b6ec5c" stroke-width="4" stroke-linecap="round"/><circle cx="24" cy="24" r="3" fill="#efffc0"/>`,
+  saber: `<path d="M9 39L36 8" stroke="#ff3b3b" stroke-width="6" stroke-linecap="round"/><path d="M9 39L36 8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M39 39L12 8" stroke="#3ba7ff" stroke-width="6" stroke-linecap="round"/><path d="M39 39L12 8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M5 44l6-7M43 44l-6-7" stroke="#555" stroke-width="5" stroke-linecap="round"/>`,
+  crown: `<path d="M8 33l2-19 8 10 6-14 6 14 8-10 2 19z" fill="#ffc72c" stroke="#8a4b00" ${S}/><rect x="8" y="33" width="32" height="6" rx="1" fill="#ff8732" stroke="#8a4b00" ${S}/><circle cx="24" cy="25" r="2.5" fill="#d62300"/>`,
+  burger: `<path d="M8 22c0-8 7-13 16-13s16 5 16 13z" fill="#f0a93b" stroke="#7a3d00" ${S}/><path d="M17 14h1M24 12h1M30 15h1" stroke="#fff6" stroke-width="2.5" stroke-linecap="round"/><path d="M7 25q4-3 8 0t8 0 8 0 8 0" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round"/><rect x="8" y="27" width="32" height="6" rx="3" fill="#6d3b1e"/><path d="M8 35h32c0 4-4 6-8 6H16c-4 0-8-2-8-6z" fill="#f0a93b" stroke="#7a3d00" ${S}/>`,
+  fries: `<path d="M17 23V8M21 23V6M25 23V9M29 23V7M33 23V11" stroke="#ffd54f" stroke-width="3.6" stroke-linecap="round"/><path d="M13 22h22l-3 20H16z" fill="#e53935" stroke="#7f0000" ${S}/><path d="M19 30h10" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>`,
+  box: `<path d="M28 4l-8 16M35 5L25 20" stroke="#c8a165" stroke-width="2.6" stroke-linecap="round"/><path d="M10 18h28l-4 24H14z" fill="#d32f2f" stroke="#6a0000" ${S}/><path d="M10 18l4-6h20l4 6" fill="#ef5350" stroke="#6a0000" ${S}/><circle cx="24" cy="30" r="5.5" fill="#fff" stroke="#6a0000" stroke-width="1.5"/><path d="M21 30q1.5-2 3 0t3 0" stroke="#d32f2f" stroke-width="1.5" fill="none"/>`,
+  brick: `<rect x="10" y="13" width="8" height="7" rx="2" fill="#ffd500" stroke="#8a6d00" ${S}/><rect x="20" y="13" width="8" height="7" rx="2" fill="#ffd500" stroke="#8a6d00" ${S}/><rect x="30" y="13" width="8" height="7" rx="2" fill="#ffd500" stroke="#8a6d00" ${S}/><rect x="6" y="20" width="36" height="18" rx="2" fill="#ffd500" stroke="#8a6d00" ${S}/><path d="M9 24h30" stroke="#fff6" stroke-width="2"/>`,
+  split: `<path d="M24 41C10 31 4 23 8 15c4-7 13-6 16 1z" fill="#3f7de0" stroke="#fff" ${S}/><path d="M24 16c3-7 12-8 16-1 4 8-2 16-16 26z" fill="#e8566b" stroke="#fff" ${S}/>`,
+  plane: `<rect x="5" y="15" width="36" height="5" rx="2.5" fill="#e53935" stroke="#2b1a10" ${S}/><path d="M13 20v8M33 20v8" stroke="#2b1a10" stroke-width="2"/><ellipse cx="23" cy="28" rx="15" ry="6.5" fill="#f4e3c1" stroke="#2b1a10" ${S}/><rect x="9" y="31" width="28" height="4" rx="2" fill="#e53935" stroke="#2b1a10" stroke-width="1.6"/><circle cx="26" cy="25" r="3.2" fill="#fff" stroke="#2b1a10" stroke-width="1.6"/><path d="M41 19v18" stroke="#2b1a10" stroke-width="3" stroke-linecap="round"/><circle cx="39" cy="28" r="2" fill="#2b1a10"/>`,
+  note: `<g transform="translate(-1.6 -1.6)"><path d="M20 34a6 6 0 1 1-3-5.2V8h13v6h-8v20z" fill="#25f4ee"/></g><g transform="translate(1.6 1.6)"><path d="M20 34a6 6 0 1 1-3-5.2V8h13v6h-8v20z" fill="#fe2c55"/></g><path d="M20 34a6 6 0 1 1-3-5.2V8h13v6h-8v20z" fill="#fff" stroke="#000" stroke-width="1.2"/>`,
+  bag: `<path d="M18 16v-3a6 6 0 0 1 12 0v3" fill="none" stroke="#8e244d" stroke-width="2.6"/><path d="M10 16h28l-2 26H12z" fill="#ff8cc6" stroke="#8e244d" ${S}/><g transform="translate(14.5 22) scale(.4)">${BOW}</g>`,
+  star: `<path d="M24 4l4.5 13.5L42 22l-13.5 4.5L24 40l-4.5-13.5L6 22l13.5-4.5z" fill="#ffe066" stroke="#b8860b" ${S}/>`
+};
+const svgIcon = k => `<svg viewBox="0 0 48 48" aria-hidden="true">${ICONS[k]||ICONS.star}</svg>`;
+$$('.like[data-ic]').forEach(c => c.insertAdjacentHTML('beforeend', `<span class="ic diecut">${svgIcon(c.dataset.ic)}</span>`));
+/* uma figurinha por evento da linha do tempo, na ordem em que aparecem */
+const EV_IC = ['note','tarot','bow','pink','star','burger','crown','pink','split','skull','paper','star','bow','heart'];
+$$('.timeline .ev').forEach((ev,i) => ev.insertAdjacentHTML('afterbegin', `<span class="evic diecut">${svgIcon(EV_IC[i % EV_IC.length])}</span>`));
+
+/* figurinhas nas bordas: alternam esquerda/direita, cada uma com um giro e uma velocidade de paralaxe */
+const stks = [];
+$$('.decor[data-stk]').forEach(sec => {
+  const list = sec.dataset.stk.split(' ');
+  list.forEach((k,i) => {
+    const el = document.createElement('i');
+    el.className = 'stk diecut';
+    el.innerHTML = svgIcon(k);
+    const left = i % 2 === 0;
+    el.style[left ? 'left' : 'right'] = '-14px';
+    el.style.top = (6 + (i + .5) / list.length * 86) + '%';
+    el.dataset.r = ((i * 37) % 50) - 25;              /* giro entre -25° e 25°, fixo */
+    el.dataset.sp = (.08 + (i % 3) * .05).toFixed(2); /* 3 velocidades de paralaxe */
+    el.style.transform = `rotate(${el.dataset.r}deg)`;
+    sec.appendChild(el); stks.push(el); io.observe(el);
+  });
+});
+if(!REDUCED){
+  let ticking = false;
+  const para = () => { ticking = false; const vh = innerHeight;
+    stks.forEach(el => { const y = el.parentNode.getBoundingClientRect().top + el.offsetTop + 24; /* offsetTop ignora o transform */
+      if(y < -150 || y > vh + 150) return;
+      el.style.transform = `translateY(${(y - vh/2) * -el.dataset.sp}px) rotate(${el.dataset.r}deg)`; }); };
+  addEventListener('scroll', () => { if(!ticking){ ticking = true; requestAnimationFrame(para); } }, {passive:true});
+}
+
+/* dias desde 15/04/2026 */
+$('#days').textContent = Math.max(0, Math.floor((Date.now() - new Date('2026-04-15T00:00:00-04:00')) / 864e5));
+
+/* fotos: se o arquivo existir na pasta fotos/, ele entra sozinho no lugar do pontilhado */
+$$('.polaroid').forEach(f => {
+  const src = f.dataset.src; if(!src) return;
+  const img = new Image();
+  img.onload = () => { const ph = f.querySelector('.ph'); ph.innerHTML=''; ph.appendChild(img); };
+  img.src = src;
+});
+
+/* 1 -> cartas */
+$('#startBtn').onclick = () => show('#cards');
+let flipped = 0;
+$$('.tc').forEach(c => c.onclick = () => {
+  if(c.classList.contains('flip')) return;
+  c.classList.add('flip'); flipped++;
+  const ln=document.createElement('span'); ln.className='ln'; ln.textContent=READINGS[c.dataset.k]; $('#reading').appendChild(ln);
+  setTimeout(()=>{ const r=c.getBoundingClientRect(); emit(r.left+r.width/2, r.top+r.height/2, 26, {speed:4, g:-.02, life:60, size:7, shapes:['star'], cols:['#ffe9a8','#d9b25f','#ffffff']}); }, 450);
+  if(flipped===3) setTimeout(()=>$('#goStory').classList.remove('hide'), 900);
+});
+/* cartas -> abertura Star Wars */
+/* céu estrelado do letreiro: cada estrela é uma sombra do mesmo pontinho (0 imagens, 1 elemento por camada) */
+$$('#crawl .stars').forEach((el,i) => {
+  const n = i ? 45 : 170, sh = [];
+  for(let k=0;k<n;k++) sh.push(`${Math.round(Math.random()*1400)}px ${Math.round(Math.random()*1000)}px 0 0 rgba(255,255,255,${(.35+Math.random()*.65).toFixed(2)})`);
+  el.style.boxShadow = sh.join(',');
+});
+let crawlTimer;
+$('#goStory').onclick = () => { show('#crawl'); crawlTimer = setTimeout(showStory, 27000); }; /* o último parágrafo sai da tela ~25,5 s (medido em 375x812) */
+function showStory(){ clearTimeout(crawlTimer); show('#story'); observeAll(); }
+$('#skip').onclick = showStory;
+
+/* assinatura */
+const pad = $('#pad'), px = pad.getContext('2d'); let drawing=false, strokes=0;
+function fitPad(){ const r=pad.getBoundingClientRect(); pad.width=r.width*devicePixelRatio; pad.height=r.height*devicePixelRatio; px.scale(devicePixelRatio,devicePixelRatio); px.lineWidth=2.5; px.lineCap='round'; px.strokeStyle='#1d1a40'; }
+function pos(e){ const r=pad.getBoundingClientRect(); return [e.clientX-r.left,e.clientY-r.top]; }
+pad.addEventListener('pointerdown',e=>{ drawing=true; px.beginPath(); px.moveTo(...pos(e)); pad.setPointerCapture(e.pointerId); });
+pad.addEventListener('pointermove',e=>{ if(!drawing) return; px.lineTo(...pos(e)); px.stroke(); strokes++; });
+/* "plim" ao terminar de assinar: o som nasce no pointerup, que conta como toque da pessoa */
+function plim(){ try{
+  const A=plim.ctx||(plim.ctx=new (window.AudioContext||window.webkitAudioContext)()); A.resume(); const t=A.currentTime;
+  [1318.5,1975.5].forEach((f,i)=>{ const o=A.createOscillator(), g=A.createGain(), s=t+i*.09;
+    o.type='sine'; o.frequency.value=f; g.gain.setValueAtTime(0,s); g.gain.linearRampToValueAtTime(.18,s+.01); g.gain.exponentialRampToValueAtTime(.001,s+.9);
+    o.connect(g).connect(A.destination); o.start(s); o.stop(s+1); });
+}catch(e){} }
+let signed=false;
+['pointerup','pointercancel'].forEach(t=>pad.addEventListener(t,()=>{
+  drawing=false;
+  if(strokes>25 && !signed){ signed=true; plim();
+    $('#yes').classList.add('ready'); $('#seal').classList.add('on');
+    const h=$('#padHint'); h.textContent='Assinado! Agora é só aceitar lá embaixo.'; h.classList.add('ok');
+    const r=pad.getBoundingClientRect(); emit(r.left+r.width/2, r.top+r.height/2, 30, {speed:5, g:.05, life:55, size:7, shapes:['star','heart'], cols:['#1f7a3a','#d9b25f','#ff3d9a']}); }
+}));
+$('#clearPad').onclick = () => { px.clearRect(0,0,pad.width,pad.height); strokes=0; signed=false; $('#yes').classList.remove('ready'); $('#seal').classList.remove('on'); const h=$('#padHint'); h.classList.remove('ok'); h.textContent='Assine acima para liberar o botão.'; };
+addEventListener('load',fitPad); addEventListener('resize',()=>{ if(!strokes) fitPad(); });
+
+/* botão "pensar mais" foge */
+const no = $('#no');
+const NO_TXT=['pensar mais','tem certeza?','pensa de novo','ops, escapei','só tem SIM 💖'];
+let dodges=0;
+function dodge(){ dodges++;
+  no.style.transform = `translate(${(Math.random()*2-1)*Math.min(120,innerWidth/3)}px,${(Math.random()*2-1)*80}px) rotate(${(Math.random()*2-1)*14}deg) scale(${Math.max(.6,1-dodges*.07)})`;
+  no.textContent = NO_TXT[Math.min(dodges,NO_TXT.length-1)]; }
+['mouseenter','touchstart','click'].forEach(ev => no.addEventListener(ev, e => { e.preventDefault(); dodge(); }, {passive:false}));
+
+/* confete */
+const cv = $('#fx'), cx = cv.getContext('2d');
+function size(){ cv.width=innerWidth; cv.height=innerHeight; } size(); addEventListener('resize',size);
+let parts=[];
+/* partículas: retângulo (confete), coração e estrela de 4 pontas */
+function emit(x,y,n,o={}){
+  if(REDUCED) return;
+  const cols=o.cols||['#ff3d9a','#ff8cc6','#97ce4c','#ffe81f','#d9b25f','#ffffff'], sh=o.shapes||['rect'];
+  for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2, sp=(o.speed||8)*(.4+Math.random()*.8);
+    parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-(o.up||0),g:o.g??.35,s:(o.size||8)*(.5+Math.random()),c:cols[i%cols.length],r:Math.random()*6,vr:(Math.random()-.5)*.3,sh:sh[i%sh.length],life:o.life||1e9,age:0}); }
+  if(!tick.on){ tick.on=true; tick.last=0; requestAnimationFrame(tick); }
+}
+function burst(){ emit(innerWidth/2, innerHeight*.6, 160, {speed:15, up:7, shapes:['rect','rect','heart']}); }
+function shape(p){
+  const s=p.s;
+  if(p.sh==='heart'){ cx.beginPath(); cx.moveTo(0,s*.35); cx.bezierCurveTo(-s,-.25*s,-.45*s,-s,0,-.4*s); cx.bezierCurveTo(.45*s,-s,s,-.25*s,0,s*.35); cx.fill(); }
+  else if(p.sh==='star'){ cx.beginPath(); for(let i=0;i<8;i++){ const a=i*Math.PI/4, r=i%2?s*.18:s*.6; cx.lineTo(Math.cos(a)*r,Math.sin(a)*r); } cx.fill(); }
+  else cx.fillRect(-s/2,-s/2,s,s*.6);
+}
+function tick(now){
+  const dt=Math.min(3,(now-(tick.last||now))/16.7); tick.last=now;
+  cx.clearRect(0,0,cv.width,cv.height);
+  parts.forEach(p=>{ p.age+=dt; p.vy+=p.g*dt; p.vx*=Math.pow(.99,dt); p.x+=p.vx*dt; p.y+=p.vy*dt; p.r+=p.vr*dt;
+    cx.globalAlpha=Math.max(0,Math.min(1,1-p.age/p.life)); cx.fillStyle=p.c; cx.save(); cx.translate(p.x,p.y); cx.rotate(p.r); shape(p); cx.restore(); });
+  cx.globalAlpha=1;
+  parts=parts.filter(p=>p.y<innerHeight+40 && p.age<p.life);
+  if(parts.length) requestAnimationFrame(tick); else { tick.on=false; cx.clearRect(0,0,cv.width,cv.height); }
+}
+
+/* números sobem de 0 até o valor quando aparecem */
+const cio = new IntersectionObserver(es => es.forEach(e => { if(!e.isIntersecting) return; cio.unobserve(e.target); countUp(e.target); }), {threshold:.5});
+$$('.stat strong').forEach(s => { s.dataset.n = s.textContent.replace(/\D/g,''); if(!REDUCED) s.textContent='0'; cio.observe(s); });
+function countUp(el){
+  const N=+el.dataset.n, t0=performance.now(), D=1800;
+  if(REDUCED){ el.textContent=N.toLocaleString('pt-BR'); return; }
+  let done=false;
+  (function f(now){ if(done) return; const x=Math.min(1,(now-t0)/D), e=1-Math.pow(1-x,3); el.textContent=Math.round(N*e).toLocaleString('pt-BR'); if(x<1) requestAnimationFrame(f); else done=true; })(t0);
+  setTimeout(()=>{ done=true; el.textContent=N.toLocaleString('pt-BR'); }, D+300); /* rede de segurança se a aba pausar os quadros */
+}
+
+/* SIM: o portal engole a tela, a música começa (só depois do toque) e vem a parte final */
+$('#yes').onclick = () => {
+  const y=$('#yes'); if(!y.classList.contains('ready') || y.disabled) return;
+  y.disabled = true;
+  const a = $('#song');
+  a.play().then(()=>{ $('#songMsg').textContent='tocando agora ♪'; }).catch(()=>{});
+  const r = y.getBoundingClientRect();
+  portalJump(r.left+r.width/2, r.top+r.height/2, () => {
+    $('#btns').classList.add('hide');
+    $('#afterSim').classList.remove('hide'); observeAll();
+    $('#afterSim').scrollIntoView({behavior:'instant'});
+    burst(); setTimeout(burst,600); setTimeout(burst,1300);
+  });
+};
+</script>
+</body>
+</html>
